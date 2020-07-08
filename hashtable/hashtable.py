@@ -23,7 +23,10 @@ class HashTable:
 
     def __init__(self, capacity = MIN_CAPACITY):
         # Your code here
-        self.capacity = capacity
+        if capacity < MIN_CAPACITY:
+            self.capacity = MIN_CAPACITY
+        else:
+            self.capacity = capacity
         self.count = 0
         self.storage = [None] * self.capacity
 
@@ -39,7 +42,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        return self.storage
+        return len(self.storage)
 
 
     def get_load_factor(self):
@@ -106,8 +109,9 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        self.count += 1
         hash_idx = self.hash_index(key)
-        self.storage[hash_idx] = value
+        self.storage[hash_idx] = HashTableEntry(key = key, value = value)
 
 
     def delete(self, key):
@@ -119,11 +123,13 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        hash_idx = self.storage[key]
-        if not self.storage[hash_idx]:
+        delete_idx = self.storage[key]
+
+        if self.storage[delete_idx] is None:
             print("Key not found.")
         else:
-            self.storage[hash_idx] = None
+            self.count -= 1
+            self.storage[delete_idx] = HashTableEntry(key, None)
 
 
     def get(self, key):
@@ -135,8 +141,13 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        hash_idx = self.hash_index(key)
-        return self.storage[hash_idx]
+        get_idx = self.hash_index(key)
+        hash_value = self.storage[get_idx]
+
+        if hash_value is not None:
+            return hash_value.value
+        else:
+            return None
 
 
     def resize(self, new_capacity):
@@ -147,6 +158,15 @@ class HashTable:
         Implement this.
         """
         # Your code here
+
+        old_storage = self.storage.copy()
+        self.capacity *= 2
+        self.storage = [None] * self.capacity
+
+        for i in range(len(old_storage)):
+            old_pair = old_storage[i]
+            self.put(old_pair.key, old_pair.value)
+
 
 
 
