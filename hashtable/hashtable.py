@@ -1,3 +1,4 @@
+
 class HashTableEntry:
     """
     Linked List hash table key/value pair
@@ -20,10 +21,11 @@ class HashTable:
     Implement this.
     """
 
-    def __init__(self, capacity):
+    def __init__(self, capacity = MIN_CAPACITY):
         # Your code here
         self.capacity = capacity
-        self.data = [None] * capacity
+        self.count = 0
+        self.storage = [None] * self.capacity
 
 
     def get_num_slots(self):
@@ -37,7 +39,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        return self.capacity
+        return self.storage
 
 
     def get_load_factor(self):
@@ -47,30 +49,30 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        keys = 0
-        for k in self.data:
-            if k != None:
-                keys += 1
-        
-        return (keys / self.capacity)
+        return sum(x is not None for x in self.storage)
 
 
     def fnv1(self, key):
         """
         FNV-1 Hash, 64-bit
-
         Implement this, and/or DJB2.
         """
+        # $%$Start
+        # 64-bit constants
+        ## These values are 64-bit implementation
+        FNV_offset_basis_64 = 0xcbf29ce484222325
+        FNV_prime_64 = 0x100000001b3
 
-        # Your code here
-        FNV_prime = 1099511628211
-        offset_basis = 14695981039346656037
+        # Cast the key to a string and get bytes
 
-	    #FNV-1a Hash Function
-        hash = offset_basis + key
-        for char in string:
-            hash = hash * FNV_prime
-            hash = hash ^ ord(char)
+        ## Default encoding is UTF-8
+        str_key = str(key).encode()
+
+        hash = FNV_offset_basis_64
+        for b in str_key:
+            hash *= FNV_prime_64
+            hash ^= b
+            hash &= 0xffffffffffffffff  # 64-bit hash
         return hash
 
 
@@ -81,7 +83,7 @@ class HashTable:
         Implement this, and/or FNV-1.
         """
         # Your code here
-        hash = 0
+        hash = 5381
         for c in key:
             hash = (hash * 33) + ord(c)
         return hash
@@ -92,8 +94,8 @@ class HashTable:
         Take an arbitrary key and return a valid integer index
         between within the storage capacity of the hash table.
         """
-        #return self.fnv1(key) % self.capacity
-        return self.djb2(key) % self.capacity
+        return self.fnv1(key) % self.capacity
+        #return self.djb2(key) % self.capacity
 
     def put(self, key, value):
         """
@@ -104,7 +106,8 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        self.data[key] = value
+        hash_idx = self.hash_index(key)
+        self.storage[hash_idx] = value
 
 
     def delete(self, key):
@@ -116,6 +119,11 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        hash_idx = self.storage[key]
+        if not self.storage[hash_idx]:
+            print("Key not found.")
+        else:
+            self.storage[hash_idx] = None
 
 
     def get(self, key):
@@ -127,6 +135,8 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        hash_idx = self.hash_index(key)
+        return self.storage[hash_idx]
 
 
     def resize(self, new_capacity):
